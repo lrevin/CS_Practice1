@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <!-- 이 줄이 있어야 휴대폰에서 글자가 작아지지 않는다 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>경동대 축제 부스 찾기</title>
+
+  <style>
+    /* ---------- 기본 설정 ---------- */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+      background: #f4f5fb;
+      color: #1f2333;
+      line-height: 1.5;
+    }
+
+    /* ---------- 맨 위 제목 ---------- */
+    header {
+      background: linear-gradient(135deg, #4b3fd6, #8a4fe0);
+      color: white;
+      padding: 28px 16px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* ---------- 가운데 내용 영역 ---------- */
+    main {
+      max-width: 1000px;      /* 컴퓨터에서 너무 넓어지지 않게 */
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    section {
+      background: white;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    section h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    /* ---------- 입력칸과 버튼 ---------- */
+    .row {
+      display: flex;
+      flex-direction: column;   /* 휴대폰: 위아래로 쌓기 */
+      gap: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;          /* 16px이어야 아이폰에서 화면이 확대되지 않는다 */
+      border: 1px solid #cfd3e3;
+      border-radius: 10px;
+    }
+
+    input:focus {
+      outline: 2px solid #4b3fd6;
+      border-color: #4b3fd6;
+    }
+
+    button {
+      padding: 12px 16px;
+      font-size: 16px;
+      font-weight: bold;
+      color: white;
+      background: #4b3fd6;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      min-height: 46px;         /* 손가락으로 누르기 편한 높이 */
+    }
+
+    button:hover {
+      background: #3a30b0;
+    }
+
+    button:disabled {
+      background: #b9bccb;
+      cursor: not-allowed;
+    }
+
+    /* ---------- 종류 버튼 (전체, 먹거리 ...) ---------- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .chips button {
+      background: #ecebfb;
+      color: #4b3fd6;
+      font-size: 14px;
+      padding: 8px 14px;
+      min-height: 38px;
+      border-radius: 20px;
+    }
+
+    .chips button:hover {
+      background: #dcd9f8;
+    }
+
+    /* ---------- 안내 메시지 ---------- */
+    .message {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      display: none;            /* 평소에는 숨김 */
+    }
+
+    .message.ok {
+      display: block;
+      background: #e6f6ec;
+      color: #17713a;
+    }
+
+    .message.error {
+      display: block;
+      background: #fdeaea;
+      color: #b3261e;
+    }
+
+    /* ---------- 부스 카드 ---------- */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr;   /* 휴대폰: 한 줄에 1개 */
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .card {
+      border: 1px solid #e3e5f0;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #fff1d6;
+      color: #9a5b00;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 14px;
+      color: #555b70;
+    }
+
+    .card .seats {
+      font-weight: bold;
+      color: #1f2333;
+    }
+
+    .card button {
+      margin-top: 6px;
+    }
+
+    /* ---------- 화면이 넓어지면 모양 바꾸기 ---------- */
+    @media (min-width: 600px) {
+      /* 태블릿: 입력칸을 옆으로 나란히, 카드는 2개씩 */
+      .row {
+        flex-direction: row;
+      }
+
+      .row button {
+        white-space: nowrap;
+      }
+
+      .cards {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (min-width: 900px) {
+      /* 컴퓨터: 카드 3개씩 */
+      header h1 {
+        font-size: 30px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🎪 경동대 축제 부스 찾기</h1>
+    <p>경동대학교 축제 부스 예약 서비스입니다.</p>
+  </header>
+
+  <main>
+    <!-- 예약자 정보: 여기 적은 학번과 이름으로 예약된다 -->
+    <section>
+      <h2>① 내 정보 입력</h2>
+      <div class="row">
+        <input id="studentId" type="text" inputmode="numeric" placeholder="학번 (숫자만)">
+        <input id="studentName" type="text" placeholder="이름">
+      </div>
+    </section>
+
+    <!-- 기능 1: 부스 검색 / 기능 2: 부스 예약 -->
+    <section>
+      <h2>② 부스 검색 · 예약</h2>
+      <div class="row">
+        <input id="keyword" type="text" placeholder="부스 이름, 종류, 위치로 검색">
+        <button onclick="searchBooths()">검색</button>
+      </div>
+
+      <div class="chips">
+        <button onclick="searchByChip('')">전체</button>
+        <button onclick="searchByChip('먹거리')">먹거리</button>
+        <button onclick="searchByChip('게임')">게임</button>
+        <button onclick="searchByChip('체험')">체험</button>
+        <button onclick="searchByChip('굿즈')">굿즈</button>
+      </div>
+
+      <div id="boothMessage" class="message"></div>
+      <div id="boothList" class="cards"></div>
+    </section>
+
+    <!-- 기능 3: 내 예약 조회 -->
+    <section>
+      <h2>③ 내 예약 조회</h2>
+      <div class="row">
+        <button onclick="loadMyReservations()">위에 적은 학번으로 조회</button>
+      </div>
+      <div id="myMessage" class="message"></div>
+      <div id="myList" class="cards"></div>
+    </section>
+  </main>
+
+  <script>
+    // ---------------------------------------------
+    // 안내 메시지를 보여주는 함수
+    // type 은 "ok"(초록) 또는 "error"(빨강)
+    // ---------------------------------------------
+    function showMessage(boxId, text, type) {
+      const box = document.getElementById(boxId);
+      box.textContent = text;
+      box.className = "message " + type;
+    }
+
+    function hideMessage(boxId) {
+      document.getElementById(boxId).className = "message";
+    }
+
+    // ---------------------------------------------
+    // 부스 카드 한 개의 HTML을 만드는 함수
+    // showButton 이 true 이면 예약 버튼도 함께 만든다
+    // ---------------------------------------------
+    function makeCard(booth, showButton) {
+      let html = "";
+      html += '<div class="card">';
+      html += '<div><span class="tag">' + booth.category + "</span></div>";
+      html += "<h3>" + booth.name + "</h3>";
+      html += "<p>📍 " + booth.location + "</p>";
+      html += '<p class="seats">남은 자리 ' + booth.remaining + " / " + booth.capacity + "</p>";
+
+      if (showButton) {
+        if (booth.remaining > 0) {
+          html += '<button onclick="reserveBooth(' + booth.id + ')">예약하기</button>';
+        } else {
+          html += "<button disabled>마감</button>";
+        }
+      }
+
+      html += "</div>";
+      return html;
+    }
+
+    // ---------------------------------------------
+    // 기능 1. 부스 검색
+    // ---------------------------------------------
+    async function searchBooths() {
+      const keyword = document.getElementById("keyword").value;
+
+      // 서버에 검색 요청 보내기
+      const response = await fetch("/api/booths?q=" + encodeURIComponent(keyword));
+      const data = await response.json();
+
+      const list = document.getElementById("boothList");
+
+      // 서버가 오류를 보냈을 때 (예: 검색어가 너무 김)
+      if (!response.ok) {
+        list.innerHTML = "";
+        showMessage("boothMessage", data.error, "error");
+        return;
+      }
+
+      // 결과가 하나도 없을 때
+      if (data.length === 0) {
+        list.innerHTML = "";
+        showMessage("boothMessage", "검색 결과가 없습니다.", "error");
+        return;
+      }
+
+      // 결과가 있으면 카드로 그리기
+      hideMessage("boothMessage");
+      let html = "";
+      for (const booth of data) {
+        html += makeCard(booth, true);
+      }
+      list.innerHTML = html;
+    }
+
+    // 종류 버튼을 눌렀을 때: 검색칸에 글자를 넣고 검색
+    function searchByChip(word) {
+      document.getElementById("keyword").value = word;
+      searchBooths();
+    }
+
+    // ---------------------------------------------
+    // 기능 2. 부스 예약
+    // ---------------------------------------------
+    async function reserveBooth(boothId) {
+      const studentId = document.getElementById("studentId").value;
+      const studentName = document.getElementById("studentName").value;
+
+      // 서버에 예약 요청 보내기
+      const response = await fetch("/api/booths/" + boothId + "/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: studentId, name: studentName })
+      });
+      const data = await response.json();
+
+      // 실패했을 때 (학번 오류, 중복 예약, 마감 등)
+      if (!response.ok) {
+        showMessage("boothMessage", data.error, "error");
+        return;
+      }
+
+      // 성공했을 때: 목록을 새로 불러와서 남은 자리를 갱신
+      await searchBooths();
+      showMessage(
+        "boothMessage",
+        data.name + " 예약 완료! (" + data.reserved + "/" + data.capacity + ")",
+        "ok"
+      );
+    }
+
+    // ---------------------------------------------
+    // 기능 3. 내 예약 조회
+    // ---------------------------------------------
+    async function loadMyReservations() {
+      const studentId = document.getElementById("studentId").value;
+
+      const response = await fetch("/api/reservations?student_id=" + encodeURIComponent(studentId));
+      const data = await response.json();
+
+      const list = document.getElementById("myList");
+
+      if (!response.ok) {
+        list.innerHTML = "";
+        showMessage("myMessage", data.error, "error");
+        return;
+      }
+
+      if (data.length === 0) {
+        list.innerHTML = "";
+        showMessage("myMessage", "예약 내역이 없습니다.", "error");
+        return;
+      }
+
+      showMessage("myMessage", "예약한 부스 " + data.length + "곳", "ok");
+      let html = "";
+      for (const booth of data) {
+        html += makeCard(booth, false);
+      }
+      list.innerHTML = html;
+    }
+
+    // 검색칸에서 Enter 를 눌러도 검색되게 하기
+    document.getElementById("keyword").addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        searchBooths();
+      }
+    });
+
+    // 페이지가 처음 열릴 때 전체 부스 보여주기
+    searchBooths();
+  </script>
+</body>
+</html>
